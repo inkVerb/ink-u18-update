@@ -1,0 +1,80 @@
+#!/bin/sh
+# inkVerb updater for Inker™, verb.ink
+
+# This updates the Inker
+## This contains many version updaters to update a Inker™ sequentially, one version at a time.
+## This is run at the path: /var/local/ink/ink-update/update
+
+# DEV NOTE: Larger versions must be at the bottom, smaller versions at the top, so "descending"
+
+# DEV INSTRUCTIONS: Put all related files for each patch in a folder named by the version number, ie 0.806
+
+## Sample version updater:
+#UPDATE_PATCH_IVERNO=
+#if [ $(echo "$UPDATE_PATCH_IVERNO>$IVERNO"|bc) = 1 ]; then
+#
+## Run the update scripts for this patch
+#
+###### SCRIPTS GO HERE #####
+#
+#
+############################
+## Set and refresh the current version into inklists
+#sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/inklists/inkerverno
+#. /var/local/ink/configs/inklists/inkerverno
+#echo "Inker updated to v${IVERNO}"
+#else
+#echo "${UPDATE_PATCH_VERNO} patch not necessary..."
+#fi
+############################
+
+
+MIN_IVERNO=0.202
+
+## Version Check ##
+### The minimum version that can use this updater
+## Include the configs
+. /var/local/ink/configs/inklists/inkerverno
+. /var/local/verb/configs/sitenameip
+## Check minimal updateable version
+if [ $(echo "$MIN_IVERNO>$IVERNO"|bc) = 1 ]; then
+echo "Current Verber™ version is ${IVERNO}, minimum ${MIN_IVERNO} to use this updater.
+Run updateverberlegacy for older versions."
+exit 22
+fi
+
+# Update Knights
+rm -R /var/local/ink/knights
+cp -R /var/local/ink/ink-update/knights /var/local/ink/
+
+# Run version-by-version updates
+
+
+UPDATE_PATCH_IVERNO=0.203
+if [ $(echo "$UPDATE_PATCH_IVERNO>$IVERNO"|bc) = 1 ]; then
+# Run the update scripts for this patch
+
+##### SCRIPTS GO HERE #####
+cp -R /var/local/ink/ink-update/0.203/donjon/repoupdate /var/local/ink/donjon/
+
+# Set and refresh the current version into inklists
+sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/configs/inklists/inkerverno
+. /var/local/ink/configs/inklists/inkerverno
+echo "Inker updated to v${IVERNO}"
+else
+echo "${UPDATE_PATCH_VERNO} patch not necessary..."
+fi
+
+###########################
+
+# Verb Domain mod?
+if [ -f /var/local/verb/configs/sitedomainverber ]; then
+ if [ "${VTYPE}" = "INK_DOMAIN" ]; then
+/var/local/ink/configs/conflab/mods/domainverber
+ fi
+fi
+
+
+# Finish
+echo "Inker at v${IVERNO}"
+
