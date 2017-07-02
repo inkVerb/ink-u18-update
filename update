@@ -11,7 +11,8 @@
 
 ## Sample version updater:
 #UPDATE_PATCH_IVERNO=
-#if [ $(echo "$UPDATE_PATCH_IVERNO>$IVERNO"|bc) = 1 ]; then
+#if [ $(echo ${UPDATE_PATCH_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
+
 #
 ## Run the update scripts for this patch
 #
@@ -37,7 +38,7 @@ MIN_IVERNO=0.202
 . /var/local/ink/configs/inklists/inkerverno
 . /var/local/verb/configs/sitenameip
 ## Check minimal updateable version
-if [ $(echo "$MIN_IVERNO>$IVERNO"|bc) = 1 ]; then
+if [ $(echo ${MIN_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
 echo "Current Verber™ version is ${IVERNO}, minimum ${MIN_IVERNO} to use this updater.
 Run updateverberlegacy for older versions."
 exit 22
@@ -51,7 +52,7 @@ cp -R /var/local/ink/ink-update/knights /var/local/ink/
 
 
 UPDATE_PATCH_IVERNO=0.203
-if [ $(echo "$UPDATE_PATCH_IVERNO>$IVERNO"|bc) = 1 ]; then
+if [ $(echo ${UPDATE_PATCH_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
 # Run the update scripts for this patch
 
 ##### SCRIPTS GO HERE #####
