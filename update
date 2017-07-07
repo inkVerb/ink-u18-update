@@ -21,7 +21,7 @@
 #
 ############################
 ## Set and refresh the current version into inklists
-#sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/inklists/inkerverno
+#sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/configs/inklists/inkerverno
 #. /var/local/ink/configs/inklists/inkerverno
 #echo "Inker updated to v${IVERNO}"
 #else
@@ -82,7 +82,7 @@ cp -f /var/local/ink/${IUPDATE_REPO}/0.204/inkerinfo /var/local/ink/configs/
 
 ###########################
 # Set and refresh the current version into inklists
-sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/inklists/inkerverno
+sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/configs/inklists/inkerverno
 . /var/local/ink/configs/inklists/inkerverno
 echo "Inker updated to v${IVERNO}"
 else
@@ -90,14 +90,6 @@ echo "${UPDATE_PATCH_VERNO} patch not necessary..."
 fi
 ###########################
 
-
-
-# Verb Domain mod?
-if [ -f /var/local/verb/configs/sitedomainverber ]; then
- if [ "${VTYPE}" = "INK_DOMAIN" ]; then
-/var/local/ink/configs/conflab/mods/domainverber
- fi
-fi
 
 
 # Finish
