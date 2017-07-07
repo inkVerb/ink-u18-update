@@ -47,7 +47,7 @@ fi
 
 # Update Knights & repoverlist
 rm -rf /var/local/ink/knights/*
-cp -rf /var/local/ink/${IUPDATE_REPO}/knights/* /var/local/ink/
+cp -rf /var/local/ink/${IUPDATE_REPO}/knights/* /var/local/ink/knights/
 cp -f /var/local/ink/${IUPDATE_REPO}/repoverlist /var/local/ink/configs/inklists/
 
 # Run version-by-version updates
