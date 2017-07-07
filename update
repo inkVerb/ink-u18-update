@@ -3,7 +3,7 @@
 
 # This updates the Inker
 ## This contains many version updaters to update a Inker™ sequentially, one version at a time.
-## This is run at the path: /var/local/ink/ink-update/update
+## This is run at the path: /var/local/ink/${IUPDATE_REPO}/update
 
 # DEV NOTE: Larger versions must be at the bottom, smaller versions at the top, so "descending"
 
@@ -31,6 +31,7 @@
 
 
 MIN_IVERNO=0.202
+IUPDATE_REPO="ink-update"
 
 ## Version Check ##
 ### The minimum version that can use this updater
@@ -44,9 +45,10 @@ Run updateverberlegacy for older versions."
 exit 22
 fi
 
-# Update Knights
-rm -R /var/local/ink/knights
-cp -R /var/local/ink/ink-update/knights /var/local/ink/
+# Update Knights & repoverlist
+rm -rf /var/local/ink/knights
+cp -rf /var/local/ink/${IUPDATE_REPO}/knights /var/local/ink/
+cp -f /var/local/ink/${IUPDATE_REPO}/repoverlist /var/local/ink/configs/inklists/
 
 # Run version-by-version updates
 
@@ -56,7 +58,7 @@ if [ $(echo ${UPDATE_PATCH_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(e
 # Run the update scripts for this patch
 
 ##### SCRIPTS GO HERE #####
-cp -R /var/local/ink/ink-update/0.203/donjon/repoupdate /var/local/ink/donjon/
+cp -rf /var/local/ink/${IUPDATE_REPO}/0.203/donjon/repoupdate /var/local/ink/donjon/
 
 # Set and refresh the current version into inklists
 sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/configs/inklists/inkerverno
@@ -67,6 +69,28 @@ echo "${UPDATE_PATCH_VERNO} patch not necessary..."
 fi
 
 ###########################
+
+
+UPDATE_PATCH_IVERNO=0.204
+if [ $(echo ${UPDATE_PATCH_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
+#
+# Run the update scripts for this patch
+
+##### SCRIPTS GO HERE #####
+# New inkerinfo file
+cp -f /var/local/ink/${IUPDATE_REPO}/0.204/inkerinfo /var/local/ink/configs/
+
+###########################
+# Set and refresh the current version into inklists
+sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/inklists/inkerverno
+. /var/local/ink/configs/inklists/inkerverno
+echo "Inker updated to v${IVERNO}"
+else
+echo "${UPDATE_PATCH_VERNO} patch not necessary..."
+fi
+###########################
+
+
 
 # Verb Domain mod?
 if [ -f /var/local/verb/configs/sitedomainverber ]; then
