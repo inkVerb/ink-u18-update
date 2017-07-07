@@ -15,5 +15,5 @@ set -e
 VAPP=$1
 VER=$2
 
-sed -i "s/${VAPP}.*/${VAPP}="${VER}"/g" /var/local/ink/configs/inklists/repoverlist
+sed -i "s/${VAPP}.*/${VAPP}=\"${VER}\"/g" /var/local/ink/configs/inklists/repoverlist
 

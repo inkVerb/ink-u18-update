@@ -7,9 +7,12 @@ set -e
 
 # How to use:
 ## ./wpaddaddsite [namespace] [theme/plugin option: p, t, pt ] [ "description in quotes"]
+## p = contains only plugins; t = contains only themes; pt = contains both plugins and themes
 
 # Eg:
 ## ./wpaddaddsite myname pt "This is My Name, plugins:.. ; themes:..."
+## ./wpaddaddsite themes t "This is Great Themes, themes:..."
+## ./wpaddaddsite blgplgs pt "This is Blogg-worthy plugins, plugins:.."
 
 
 WPADDNAMESPACE=$(echo $1 | cut -c1-7)

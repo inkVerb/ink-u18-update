@@ -11,7 +11,11 @@ set -e
 
 REPODOMAIN=$1
 
-ln -s /var/local/ink/repo /var/www/html/${REPODOMAIN}/
+if [ ! -d /var/www/html/${REPODOMAIN}/ ]; then
+echo "The necessary web folder does not exist. Is the domain installed?"
+exit 22
+fi
+ln -sfn /var/local/ink/repo /var/www/html/${REPODOMAIN}/
 echo "allow from all
 Options +Indexes
 IndexOptions +FancyIndexing
