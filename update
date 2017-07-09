@@ -99,5 +99,5 @@ fi
 
 
 # Finish
-echo "Inker at v${IVERNO} from ${INKUPDATEREPO}."
+echo "Inker at v${IVERNO} framework from ${INKUPDATEREPO}."
 
