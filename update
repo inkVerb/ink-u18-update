@@ -3,49 +3,66 @@
 
 # This updates the Inker
 ## This contains many version updaters to update a Inker™ sequentially, one version at a time.
-## This is run at the path: /var/local/ink/${IUPDATE_REPO}/update
+## This is run at the path: /var/local/ink/${IUPGRADE_REPO}/update
 
 # DEV NOTE: Larger versions must be at the bottom, smaller versions at the top, so "descending"
 
-# DEV INSTRUCTIONS: Put all related files for each patch in a folder named by the version number, ie 0.806
+# DEV NOTE: A directory, even empty, must exist in the same directory as this "update" file named by by each update version ie: 0.20.07/
+
+# DEV INSTRUCTIONS: Put all related files for each patch in a folder named by the version number, ie: 0.20.07/
 
 
-MIN_IVERNO=0.202
-IUPDATE_REPO="ink-update"
+MIN_IVERNO=0.20.06
+IUPGRADE_REPO="ink-dev-update"
 
-## Sample version updater:
-#UPDATE_PATCH_IVERNO=
-#if [ $(echo ${UPDATE_PATCH_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
+### Sample version updater:
+#UPGRADE_PATCH_IVERNO=0.20.07
+#if [ $(echo ${UPGRADE_PATCH_IVERNO} | sed -e "s/\.//g" | sed -e "s/^0*//g") -gt $(echo ${IVERNO} | sed -e "s/\.//g" | sed -e "s/^0*//g") ] ; then
 #
-# Move to working directory of the patch
-#if [ -d "/var/local/verb/${IUPDATE_REPO}/${UPDATE_PATCH_IVERNO}/" ]; then
-#cd /var/local/verb/${IUPDATE_REPO}/${UPDATE_PATCH_IVERNO}/; fi
+## Notes
+#CLEAN_PATCH_IVERNO=$(echo $UPGRADE_PATCH_IVERNO | sed -e "s/\.//g")
+#PCLdoc="$(cat <<UPCL
+#Patch ${UPGRADE_PATCH_IVERNO} Changelog:
+### Patch Notes Here...
+#UPCL
+#)"
+#echo "$PCLdoc"
+### So we can call a specific version later if needed
+#eval "v$CLEAN_PATCH_KVERNO='$(echo "$PCLdoc")'"
+#
+## Move to working directory of the patch
+#if [ -d "/var/local/verb/${IUPGRADE_REPO}/${UPGRADE_PATCH_IVERNO}/" ]; then
+#cd /var/local/verb/${IUPGRADE_REPO}/${UPGRADE_PATCH_IVERNO}/; fi
 #
 ## Run the update scripts for this patch
 #
 ###### SCRIPTS GO HERE #####
-## NOTE: PWD is /var/local/verb/${IUPDATE_REPO}/${UPDATE_PATCH_IVERNO}/
-#
+### NOTE: PWD is /opt/ink/${IUPGRADE_REPO}/${UPGRADE_PATCH_IVERNO}/
+## Directory change
+#mv /var/local/ink /opt/
+#ln -sfn /opt/ink /var/local/
+#ln -sfn /opt/ink /root/
+#ln -sfn /opt/ink /home/vik/
 #
 ############################
 ## Set and refresh the current version into inklists
-#sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/configs/inklists/inkerverno
-#. /var/local/ink/configs/inklists/inkerverno
+#sed -i "s/IVERNO=.*/IVERNO=${UPGRADE_PATCH_IVERNO}/g" /opt/ink/conf/inklists/inkerverno
+#. /opt/ink/conf/inklists/inkerverno
 #echo "Inker updated to v${IVERNO}"
 #else
-#echo "${UPDATE_PATCH_VERNO} patch not necessary..."
+#echo "${UPGRADE_PATCH_VERNO} patch not necessary..."
 #fi
-############################
+################END#UPGRADE#PATCH#
 
 
 ## Version Check ##
 ### The minimum version that can use this updater
 ## Include the configs
-. /var/local/ink/configs/inklists/inkerverno
-. /var/local/ink/configs/inkerinfo
-. /var/local/verb/configs/sitenameip
+. /var/local/ink/conf/inklists/inkerverno
+. /var/local/ink/conf/inkerinfo
+. /var/local/verb/conf/sitenameip
 ## Check minimal updateable version
-if [ $(echo ${MIN_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
+if [ $(echo ${MIN_IVERNO} | sed -e "s/\.//g" | sed -e "s/^0*//g") -gt $(echo ${IVERNO} | sed -e "s/\.//g" | sed -e "s/^0*//g") ] ; then
 echo "Current Verber™ version is ${IVERNO}, minimum ${MIN_IVERNO} to use this updater.
 Run updateverberlegacy for older versions."
 exit 22
@@ -53,51 +70,53 @@ fi
 
 # Update Knights & repoverlist
 rm -rf /var/local/ink/knights/*
-cp -rf /var/local/ink/${IUPDATE_REPO}/knights/* /var/local/ink/knights/
-cp -f /var/local/ink/${IUPDATE_REPO}/repoverlist /var/local/ink/configs/inklists/
+cp -rf /var/local/ink/${IUPGRADE_REPO}/knights/* /var/local/ink/knights/
+cp -f /var/local/ink/${IUPGRADE_REPO}/repoverlist /var/local/ink/conf/inklists/
+cd /var/local/ink
+wget wget https://raw.githubusercontent.com/inkVerb/ink-dev/master/README.md
+echo "Knights and repo list have been updated."
 
 # Run version-by-version updates
 
 
-UPDATE_PATCH_IVERNO=0.203
-if [ $(echo ${UPDATE_PATCH_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
+UPGRADE_PATCH_IVERNO=0.20.07
+if [ $(echo ${UPGRADE_PATCH_IVERNO} | sed -e "s/\.//g" | sed -e "s/^0*//g") -gt $(echo ${IVERNO} | sed -e "s/\.//g" | sed -e "s/^0*//g") ] ; then
+
+# Notes
+CLEAN_PATCH_IVERNO=$(echo $UPGRADE_PATCH_IVERNO | sed -e "s/\.//g")
+PCLdoc="$(cat <<UPCL
+Patch ${UPGRADE_PATCH_IVERNO} Changelog:
+## Patch Notes Here...
+UPCL
+)"
+echo "$PCLdoc"
+## So we can call a specific version later if needed
+eval "v$CLEAN_PATCH_KVERNO='$(echo "$PCLdoc")'"
+
+# Move to working directory of the patch
+if [ -d "/var/local/verb/${IUPGRADE_REPO}/${UPGRADE_PATCH_IVERNO}/" ]; then
+cd /var/local/verb/${IUPGRADE_REPO}/${UPGRADE_PATCH_IVERNO}/; fi
+
 # Run the update scripts for this patch
 
 ##### SCRIPTS GO HERE #####
-cp -rf /var/local/ink/${IUPDATE_REPO}/0.203/donjon/repoupdate /var/local/ink/donjon/
-
-# Set and refresh the current version into inklists
-sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/configs/inklists/inkerverno
-. /var/local/ink/configs/inklists/inkerverno
-echo "Inker updated to v${IVERNO}"
-else
-echo "${UPDATE_PATCH_VERNO} patch not necessary..."
-fi
-
-###########################
-
-
-UPDATE_PATCH_IVERNO=0.204
-if [ $(echo ${UPDATE_PATCH_IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") -gt $(echo ${IVERNO} | sed -e "s/\.//" | sed -e "s/^0*//") ] ; then
-#
-# Run the update scripts for this patch
-
-##### SCRIPTS GO HERE #####
-# New inkerinfo file
-cp -f /var/local/ink/${IUPDATE_REPO}/0.204/inkerinfo /var/local/ink/configs/
+## NOTE: PWD is /opt/ink/${IUPGRADE_REPO}/${UPGRADE_PATCH_IVERNO}/
+# Directory change
+mv /var/local/ink /opt/
+ln -sfn /opt/ink /var/local/
+ln -sfn /opt/ink /root/
+ln -sfn /opt/ink /home/vik/
 
 ###########################
 # Set and refresh the current version into inklists
-sed -i "s/IVERNO=.*/IVERNO=${UPDATE_PATCH_IVERNO}/g" /var/local/ink/configs/inklists/inkerverno
-. /var/local/ink/configs/inklists/inkerverno
+sed -i "s/IVERNO=.*/IVERNO=${UPGRADE_PATCH_IVERNO}/g" /opt/ink/conf/inklists/inkerverno
+. /opt/ink/conf/inklists/inkerverno
 echo "Inker updated to v${IVERNO}"
 else
-echo "${UPDATE_PATCH_VERNO} patch not necessary..."
+echo "${UPGRADE_PATCH_VERNO} patch not necessary..."
 fi
-###########################
-
+###############END#UPGRADE#PATCH#
 
 
 # Finish
 echo "Inker at v${IVERNO} framework from ${INKUPDATEREPO}."
-

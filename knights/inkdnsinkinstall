@@ -1,0 +1,39 @@
+#!/bin/sh
+#inkVerbKnight! verb.ink
+
+# This installs the slave DNS server on the inker for inkDNS
+## This must connect to another Verber with inkDNS already installed
+
+# How to use:
+## ./inkdnsinkinstall
+
+# Include the configs
+. /opt/verb/conf/sitenameip
+
+
+if [ -f "/opt/verb/conf/inkdns/inkdnsstatus" ]; then
+. /opt/verb/conf/inkdns/inkdnsstatus
+else
+echo "inkDNS not installed, run the inkdnsinstall serf on this Verber first."
+exit 0; fi
+
+if [ "$INKDNSSTAT" != "INSTALLED" ]; then
+echo "inkDNS not installed, run the inkdnsinstall serf on this Verber first."
+exit 0; fi
+
+# Create structure
+mkdir -p /var/cache/bind/zones-inker
+chown -R bind:bind /var/cache/bind/zones-inker
+chmod -R 644 /var/cache/bind/zones-inker
+
+## DEV: FYI apparmor permissions are here: /etc/apparmor.d/usr.sbin.named
+
+# include the Inker file
+echo '// Below added by #inkVerbInker-inkDNS' >> /etc/bind/named.conf.local
+echo 'include "/etc/bind/named.conf.inker";' >> /etc/bind/named.conf.local
+
+# Config
+echo "#!/bin/sh
+
+INKDNSINKERSTAT=INSTALLED
+" > /opt/ink/conf/inkdns/inkdnsstatus

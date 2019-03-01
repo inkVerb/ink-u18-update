@@ -7,6 +7,6 @@ set -e
 # How to use:
 ## ./inkver
 
-. /var/local/ink/configs/inklists/inkerverno
+. /opt/ink/conf/inklists/inkerverno
 echo "${IVTYPE}"
 

@@ -25,7 +25,7 @@ set -e
 INFPROFILE=$1
 
 # Include config
-. /var/local/verb/configs/inkcert/csr-inf/csr.${INFPROFILE}.inf
+. /opt/verb/conf/inkcert/csr-inf/csr.${INFPROFILE}.inf
 
 # Create Intermediate Key
 cd /etc/inkcert/ca
@@ -55,6 +55,6 @@ echo "Alrighty!
 
 Download what you need here: ink/req/intermediate.csr.pem
 
-After you finish, you can upload the .zip file to the same ink/req folder.
+After you finish, you can upload the .vtxz file to the same ink/req folder.
 "
 

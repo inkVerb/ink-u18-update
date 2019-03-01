@@ -1,0 +1,127 @@
+#!/bin/sh
+#inkVerbKnight! verb.ink
+#set -e
+
+# This resets a complete list of a single remote inkDNS verm/domain-mod Verber account's base domain and all it's hosted domain slave records in the Bind9 config file: /etc/bind/named.conf.VERBERACCOUNT.verbacct
+## This only processes one, single Verber "name" account, but incldues all domains for its DNS
+## This only resets the entries in Bind, not the actual zone file contents themselves.
+## Eg, this will set all name.verb.ink, name.verb.emial, name.verb.blue, etc, and other domains (added to this Inker) records, but only for the "name" Verb namespace, also with a domain-mod
+
+# How to use:
+## ./inkdnsinkrefreshverber [ Verber type - "verb" or "dmod" ] [ vname OR mod-domain.tld ]
+
+# Eg:
+## ./inkdnsinkrefreshverber verb name
+## ./inkdnsinkrefreshverber dmod poetryiscode.com
+
+
+VTYPE="$1"
+VNAME="$2"
+
+# Install status
+if [ -f "/opt/ink/conf/inkdns/inkdnsstatus" ]; then
+. /opt/ink/conf/inkdns/inkdnsstatus
+  if [ "${INKDNSINKERSTAT}" = "INSTALLED" ]; then
+
+# Account status
+if [ ! -d "/opt/ink/verbers/v.${VTYPE}.${VNAME}" ]; then
+echo "The Verber \"${VNAME}\" type \"${VTYPE}\" does not exist. Doing nothing."
+exit 0; fi
+
+    # Refresh the inkDNS domain list file
+    rm -f /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    touch /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    chown bind:bind /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    chmod 644 /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+
+    ## Each verb tld
+    cd /opt/ink/verbers/v.${VTYPE}.${VNAME}/
+    for vTLDnfo in tld.*; do
+    onlyTLD="$(echo ${vTLDnfo} | sed 's/tld\.//' )"
+    . /opt/ink/verbers/v.${VTYPE}.${VNAME}/${vTLDnfo}
+
+    ### Start the file
+    echo "// inkVerb-inkDNS ink domain list file, managed automatically, edits will likely be deleted
+" > /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+
+    ### IP6 & IP4
+    echo "// IP6 & IP4
+zone \"${VERBERARPAIP6}\" { type slave; masters { "${VERBERIPV6}"; }; file \"/var/cache/bind/zones-inker/nv.IP6.${VTYPE}.${VNAME}.${onlyTLD}\"; allow-query { any; }; };
+zone \"${VERBERARPAIP4}\" { type slave; masters { "${VERBERIPV4}"; }; file \"/var/cache/bind/zones-inker/nv.IP4.${VTYPE}.${VNAME}.${onlyTLD}\"; allow-query { any; }; };
+
+// Hosted Verb TLDs" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+
+    ### email
+    if [ -n "${emailURI}" ]; then
+      echo "zone \"${emailURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${emailURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### city
+    if [ -n "${cityURI}" ]; then
+      echo "zone \"${cityURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${cityURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### one
+    if [ -n "${oneURI}" ]; then
+      echo "zone \"${oneURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${oneURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### ink
+    if [ -n "${inkURI}" ]; then
+      echo "zone \"${inkURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${inkURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### blue
+    if [ -n "${blueURI}" ]; then
+      echo "zone \"${blueURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${blueURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### vip
+    if [ -n "${vipURI}" ]; then
+      echo "zone \"${vipURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${vipURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### kiwi
+    if [ -n "${kiwiURI}" ]; then
+      echo "zone \"${kiwiURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${kiwiURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### cash
+    if [ -n "${cashURI}" ]; then
+      echo "zone \"${cashURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${cashURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### pink
+    if [ -n "${pinkURI}" ]; then
+      echo "zone \"${pinkURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${pinkURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### red
+    if [ -n "${redURI}" ]; then
+      echo "zone \"${redURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${redURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### rocks
+    if [ -n "${rocksURI}" ]; then
+      echo "zone \"${rocksURI}\" { type slave; masters { ${VERBERIPV6}; ${VERBERIPV4}; }; file \"/var/cache/bind/zones-inker/db.${rocksURI}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    fi
+
+    ### Wrap-up
+    echo "// Hosted domains" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    echo "Base Verber records updated for ${VTYPE} ${VNAME}."
+    done
+
+    ## Each domain
+    cd /opt/ink/verbers/v.${VTYPE}.${VNAME}
+    for domainNFO in domain.*; do
+      domainZone="$(echo ${domainNFO} | sed 's/domain\.//' )"
+      . /opt/ink/verbers/v.${VTYPE}.${VNAME}/${domainNFO}
+      . /opt/ink/verbers/v.${VTYPE}.${VNAME}/tld.${verberTLD}
+      echo "zone \"${domainZone}\" { type slave; masters { $domIP6; $domIP4; }; file \"/var/cache/bind/zones-inker/db.${domainZone}\"; allow-query { any; }; };" >> /etc/bind/named.conf.${VTYPE}.${VNAME}.verbacct
+    echo "${domainZone} records updated for ${VTYPE} ${VNAME}."
+    done
+
+  else echo "inkDNS not installed, run inkdnsinstall first."; exit 0
+  fi
+else echo "inkDNS not installed, run inkdnsinstall first."; exit 0
+fi

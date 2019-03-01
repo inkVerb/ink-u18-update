@@ -1,0 +1,289 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+#set -e
+
+# This adds a new supported Verber to this Inker
+
+# How to use:
+## ./verberadd [ vspace name / MOD ] [ host ] [ main tld ] [ mail tld ] [ IPv4 ] [ IPv6 ] [ domain.tld mod base - OPTIONAL, only if a domain mod ]
+
+# Eg:
+## ./verberadd name name1 ink email 555.555.555.555 2008::abcd
+## ./verberadd MOD mody1 ink email 555.555.555.555.2008::abcd poetryiscode.com
+
+
+VNAME="$1"
+VHOST="$2"
+SERVERTLD="$3"
+SVMAILTLD="$4"
+SERVERIPV4="$5"
+SERVERIPV6="$6"
+DMODBASE="$7"
+# Inker nsURI
+. /opt/verb/conf/siteurilist
+nsURI="${hostURI}"
+
+# Verber type
+if [ "${VNAME}" = "MOD" ]; then
+  VTYPE="dmod"
+else
+  VTYPE="verb"
+fi
+
+# Set the IPv4 for ARPA
+SERVERARPAIP4=$(echo ${SERVERIPV4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
+
+# Set the IPv6 for ARPA
+## Expand/Compress
+## THANKS https://stackoverflow.com/a/50208987/10343144
+
+### helper to convert hex to dec (portable version)
+hex2dec(){
+    [ "$1" != "" ] && printf "%d" "$(( 0x$1 ))"
+}
+
+### expand an IPv6 address
+expand_ipv6() {
+    ip=$1
+
+    # prepend 0 if we start with :
+    echo $ip | grep -qs "^:" && ip="0${ip}"
+
+    # expand ::
+    if echo $ip | grep -qs "::"; then
+        colons=$(echo $ip | sed 's/[^:]//g')
+        missing=$(echo ":::::::::" | sed "s/$colons//")
+        expanded=$(echo $missing | sed 's/:/:0/g')
+        ip=$(echo $ip | sed "s/::/$expanded/")
+    fi
+
+    blocks=$(echo $ip | grep -o "[0-9a-f]\+")
+    set $blocks
+
+    printf "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+}
+
+### returns a compressed IPv6 address under the form recommended by RFC5952
+compress_ipv6() {
+    ip=$1
+
+    blocks=$(echo $ip | grep -o "[0-9a-f]\+")
+    set $blocks
+
+    # compress leading zeros
+    ip=$(printf "%x:%x:%x:%x:%x:%x:%x:%x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+    )
+
+    # prepend : for easier matching
+    ip=:$ip
+
+    # :: must compress the longest chain
+    for pattern in :0:0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0 \
+            :0:0:0:0:0 \
+            :0:0:0:0 \
+            :0:0; do
+        if echo $ip | grep -qs $pattern; then
+            ip=$(echo $ip | sed "s/$pattern/::/")
+            # if the substitution occured before the end, we have :::
+            ip=$(echo $ip | sed 's/:::/::/')
+            break # only one substitution
+        fi
+    done
+
+    # remove prepending : if necessary
+    echo $ip | grep -qs "^:[^:]" && ip=$(echo $ip | sed 's/://')
+
+    echo $ip
+}
+
+### reverse expanded IPv6 for ARPA
+### THANKS https://stackoverflow.com/a/53674816/10343144
+rarpa_ipv6() {
+  local idx s=${1//:}
+  for (( idx=${#s} - 1; idx>=0; idx-- )); do
+    printf '%s.' "${s:$idx:1}"
+  done
+  printf 'ip6.arpa\n'
+}
+
+## Our new variables for the rest
+SERVEREXPIP6=$(expand_ipv6 ${SERVERIPV6})
+SERVERCMPIP6=$(compress_ipv6 ${SERVERIPV6})
+SERVERRARPA6=$(rarpa_ipv6 ${SERVEREXPIP6})
+
+# For domain mod Verber
+if [ -n "${DMODBASE}" ] && [ "${VNAME}" = "MOD" ]; then
+mkdir -p /opt/ink/verbers/v.${VTYPE}.${DMODBASE}
+echo "#!/bin/sh
+## This is a config file for other verb scripts
+
+# Hosting Verbers
+emailVERBER=\"${SERVERTLD}\"
+cityVERBER=\"${SERVERTLD}\"
+oneVERBER=\"${SERVERTLD}\"
+inkVERBER=\"${SERVERTLD}\"
+blueVERBER=\"${SERVERTLD}\"
+vipVERBER=\"${SERVERTLD}\"
+kiwiVERBER=\"${SERVERTLD}\"
+cashVERBER=\"${SERVERTLD}\"
+pinkVERBER=\"${SERVERTLD}\"
+redVERBER=\"${SERVERTLD}\"
+rocksVERBER=\"${SERVERTLD}\"
+" > /opt/ink/verbers/v.${VTYPE}.${DMODBASE}/nfo.base
+
+echo "#!/bin/sh
+## This is a config file for other verb scripts
+
+# Name-IP info
+VERBERIPV4=\"${SERVERIPV4}\"
+VERBERIPV6=\"${SERVERCMPIP6}\"
+VERBEREXPIPV6=\"${SERVEREXPIP6}\"
+VERBERARPAIP4=\"${SERVERARPAIP4}\"
+VERBERARPAIP6=\"${SERVERRARPA6}\"
+
+# Hosted URI list
+vNAME=\"${DMODBASE}\"
+vHOST=\"${VHOST}\"
+hostURI=\"${VHOST}.${SERVERTLD}.${DMODBASE}\"
+nameURI=\"${SERVERTLD}.${DMODBASE}\"
+emailTLDURI=\"${SVMAILTLD}.${DMODBASE}\"
+emailURI=\"email.${DMODBASE}\"
+cityURI=\"city.${DMODBASE}\"
+oneURI=\"one.${DMODBASE}\"
+inkURI=\"ink.${DMODBASE}\"
+blueURI=\"blue.${DMODBASE}\"
+vipURI=\"vip.${DMODBASE}\"
+kiwiURI=\"kiwi.${DMODBASE}\"
+cashURI=\"cash.${DMODBASE}\"
+pinkURI=\"pink.${DMODBASE}\"
+redURI=\"red.${DMODBASE}\"
+rocksURI=\"rocks.${DMODBASE}\"
+" > /opt/ink/verbers/v.${VTYPE}.${DMODBASE}/tld.${SERVERTLD}
+/opt/ink/knights/verberstatus ${VTYPE} ${DMODBASE} solo
+. /opt/ink/verbers/v.${VTYPE}.${DMODBASE}/tld.${SERVERTLD}
+
+# Verb domain Verber
+else
+mkdir -p /opt/ink/verbers/v.${VTYPE}.${VNAME}
+echo "#!/bin/sh
+## This is a config file for other verb scripts
+
+# Hosting Verbers
+emailVERBER=\"${SERVERTLD}\"
+cityVERBER=\"${SERVERTLD}\"
+oneVERBER=\"${SERVERTLD}\"
+inkVERBER=\"${SERVERTLD}\"
+blueVERBER=\"${SERVERTLD}\"
+vipVERBER=\"${SERVERTLD}\"
+kiwiVERBER=\"${SERVERTLD}\"
+cashVERBER=\"${SERVERTLD}\"
+pinkVERBER=\"${SERVERTLD}\"
+redVERBER=\"${SERVERTLD}\"
+rocksVERBER=\"${SERVERTLD}\"
+" > /opt/ink/verbers/v.${VTYPE}.${VNAME}/nfo.base
+
+echo "#!/bin/sh
+## This is a config file for other verb scripts
+
+# Name-IP info
+VERBERIPV4=\"${SERVERIPV4}\"
+VERBERIPV6=\"${SERVERCMPIP6}\"
+VERBEREXPIPV6=\"${SERVEREXPIP6}\"
+VERBERARPAIP4=\"${SERVERARPAIP4}\"
+VERBERARPAIP6=\"${SERVERRARPA6}\"
+
+# Hosted URI list
+vNAME=\"${VNAME}\"
+vHOST=\"${VHOST}\"
+hostURI=\"${VHOST}.${VNAME}.verb.email\"
+nameURI=\"${VNAME}.verb.${SERVERTLD}\"
+emailTLDURI=\"${VNAME}.verb.${SVMAILTLD}\"
+emailURI=\"${VNAME}.verb.email\"
+cityURI=\"${VNAME}.verb.city\"
+oneURI=\"${VNAME}.verb.one\"
+inkURI=\"${VNAME}.verb.ink\"
+blueURI=\"${VNAME}.verb.blue\"
+vipURI=\"${VNAME}.verb.vip\"
+kiwiURI=\"${VNAME}.verb.kiwi\"
+cashURI=\"${VNAME}.verb.cash\"
+pinkURI=\"${VNAME}.verb.pink\"
+redURI=\"${VNAME}.verb.red\"
+rocksURI=\"${VNAME}.verb.rocks\"
+" > /opt/ink/verbers/v.${VTYPE}.${VNAME}/tld.${SERVERTLD}
+/opt/ink/knights/verberstatus ${VTYPE} ${VNAME} solo
+. /opt/ink/verbers/v.${VTYPE}.${VNAME}/tld.${SERVERTLD}
+fi
+
+# Create the initial Bind rDNS zone file
+## IP6
+echo "\$TTL    86400
+@		IN  SOA		${hostURI}. root.${nameURI}. (
+0000000001		; Serial No
+10800			; Refresh
+3600			; Retry
+604800			; Expire
+1800 )			; Minimum TTL
+
+; Nameserver Defaults
+@		IN  NS		${hostURI}.
+@		IN  NS		${nsURI}.
+@		IN  NS		${SITEINKERDNS}.
+
+; Hosted Domains" >> /var/cache/bind/zones-inker/nv.IP6.${VTYPE}.${VNAME}.${SERVERTLD}
+## IP4
+echo "\$TTL    86400
+@		IN  SOA		${hostURI}. root.${nameURI}. (
+0000000001		; Serial No
+10800			; Refresh
+3600			; Retry
+604800			; Expire
+1800 )			; Minimum TTL
+
+; Nameserver Defaults
+@		IN  NS		${hostURI}.
+@		IN  NS		${nsURI}.
+@		IN  NS		${SITEINKERDNS}.
+
+; Hosted Domains" >> /var/cache/bind/zones-inker/nv.IP4.${VTYPE}.${VNAME}.${SERVERTLD}
+## Permissions
+chown bind:bind /var/cache/bind/zones-inker/nv.IP6.${VTYPE}.${VNAME}.${SERVERTLD}
+chown bind:bind /var/cache/bind/zones-inker/nv.IP4.${VTYPE}.${VNAME}.${SERVERTLD}
+chmod 644 /var/cache/bind/zones-inker/nv.IP6.${VTYPE}.${VNAME}.${SERVERTLD}
+chmod 644 /var/cache/bind/zones-inker/nv.IP4.${VTYPE}.${VNAME}.${SERVERTLD}
+
+# Almost finished
+echo " The ${VTYPE} Verber for ${VNAME} has been setup with the primary TLD as ${SERVERTLD}, now premaring other TLD entries..."
+
+# Create the first Verber DNS entries
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} email
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} city
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} one
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} ink
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} blue
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} vip
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} kiwi
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} cash
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} pink
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} red
+/opt/ink/knights/verberverbdomain ${VTYPE} ${VNAME} rocks
+
+# Finish
+echo "All setup!"
