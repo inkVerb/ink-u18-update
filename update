@@ -13,7 +13,7 @@
 
 
 MIN_IVERNO=0.20.06
-IUPGRADE_REPO="ink-dev-update"
+IUPGRADE_REPO="ink-u18-update"
 
 ### Sample version updater:
 #UPGRADE_PATCH_IVERNO=0.20.07
@@ -73,7 +73,7 @@ rm -rf /var/local/ink/knights/*
 cp -rf /var/local/ink/${IUPGRADE_REPO}/knights/* /var/local/ink/knights/
 cp -f /var/local/ink/${IUPGRADE_REPO}/repoverlist /var/local/ink/conf/inklists/
 cd /var/local/ink
-wget wget https://raw.githubusercontent.com/inkVerb/ink-dev/master/README.md
+wget wget https://raw.githubusercontent.com/inkVerb/ink-u18-dev/master/README.md
 echo "Knights and repo list have been updated."
 
 # Run version-by-version updates
